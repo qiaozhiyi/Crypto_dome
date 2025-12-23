@@ -1,4 +1,4 @@
-# encryption_mlkem.py
+# encrypto.py
 import secrets
 from importlib import import_module
 
@@ -84,7 +84,7 @@ class MLKEMEncryption:
         salt: bytes,
         nonce: bytes,
         data_ciphertext: bytes,
-        aad: bytes = b"",
+        aad: bytes = b"BugMaker",
     ):
         """
         使用私钥解封装共享密钥，再用 AES-GCM 解密数据
@@ -134,7 +134,7 @@ def main():
 
     # 加密和解密数据
     data = b"Hello, this is a test message."
-    aad = b"demo-aad"
+    aad = b"BugMaker"
     kem_ciphertext, salt, nonce, data_ciphertext = pq_encryption.encrypt_data(data, aad)
     print(f"KEM Ciphertext: {kem_ciphertext}")
     print(f"Salt: {salt}")
