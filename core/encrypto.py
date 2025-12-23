@@ -1,6 +1,7 @@
 # encrypto.py
 import secrets
 from importlib import import_module
+from typing import Optional, Tuple
 
 def _load_kem_module():
     for module_name in (
@@ -25,9 +26,23 @@ except ModuleNotFoundError as exc:
     ) from exc
 
 class MLKEMEncryption:
-    def __init__(self):
-        # 初始化生成密钥对
-        self.public_key, self.private_key = self.generate_keys()
+    def __init__(
+        self,
+        *,
+        generate_keypair: bool = True,
+        public_key: Optional[bytes] = None,
+        private_key: Optional[bytes] = None,
+    ):
+        if (public_key is not None or private_key is not None) and generate_keypair:
+            raise ValueError(
+                "When providing public_key/private_key, set generate_keypair=False."
+            )
+
+        if generate_keypair:
+            self.public_key, self.private_key = self.generate_keys()
+        else:
+            self.public_key = public_key
+            self.private_key = private_key
 
     def generate_keys(self):
         """
@@ -38,14 +53,18 @@ class MLKEMEncryption:
         public_key, private_key = _KEM.generate_keypair()
         return public_key, private_key
 
-    def encapsulate_key(self):
+    def encapsulate_key(self, public_key: Optional[bytes] = None) -> Tuple[bytes, bytes]:
         """
         使用公钥封装共享密钥
         返回：
             kem_ciphertext (bytes): KEM 密文
             shared_key (bytes): 共享密钥
         """
-        kem_ciphertext, shared_key = _KEM.encrypt(self.public_key)
+        recipient_public_key = public_key if public_key is not None else self.public_key
+        if recipient_public_key is None:
+            raise ValueError("public_key is required for encapsulation.")
+
+        kem_ciphertext, shared_key = _KEM.encrypt(recipient_public_key)
         return kem_ciphertext, shared_key
 
     def decapsulate_key(self, kem_ciphertext: bytes):
@@ -56,22 +75,32 @@ class MLKEMEncryption:
         返回：
             shared_key (bytes): 共享密钥
         """
+        if self.private_key is None:
+            raise ValueError("private_key is required for decapsulation.")
+
         shared_key = _KEM.decrypt(self.private_key, kem_ciphertext)
         return shared_key
 
-    def encrypt_data(self, data: bytes, aad: bytes = b""):
+    def encrypt_data(
+        self,
+        data: bytes,
+        aad: bytes = b"",
+        *,
+        public_key: Optional[bytes] = None,
+    ):
         """
         使用 KEM 封装共享密钥，再用 AES-GCM 加密数据
         参数：
             data (bytes): 需要加密的数据
             aad (bytes): 额外认证数据（可选）
+            public_key (bytes): 接收方公钥（可选；不提供则使用 self.public_key）
         返回：
             kem_ciphertext (bytes): KEM 密文
             salt (bytes): HKDF 盐
             nonce (bytes): AES-GCM 随机数
             data_ciphertext (bytes): 数据密文（含认证标签）
         """
-        kem_ciphertext, shared_key = self.encapsulate_key()
+        kem_ciphertext, shared_key = self.encapsulate_key(public_key=public_key)
         salt = secrets.token_bytes(16)
         nonce = secrets.token_bytes(12)
         aes_key = self._derive_aes_key(shared_key, salt)
@@ -84,7 +113,7 @@ class MLKEMEncryption:
         salt: bytes,
         nonce: bytes,
         data_ciphertext: bytes,
-        aad: bytes = b"BugMaker",
+        aad: bytes = b"",
     ):
         """
         使用私钥解封装共享密钥，再用 AES-GCM 解密数据
