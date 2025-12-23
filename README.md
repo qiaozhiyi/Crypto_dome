@@ -23,22 +23,22 @@
 ``` text
 C2-Framework/
 ├── core/                # 核心通信模块
-│   ├── comms.cpp        # 网络通信（支持 TCP/UDP、HTTP 隧道）
-│   ├── encryption.cpp   # 加密模块（量子加密、后量子加密）
-│   └── tunnel.cpp       # 隧道和协议伪装
+│   ├── comms.py        # 网络通信（支持 TCP/UDP、HTTP 隧道）
+│   ├── encryption.py   # 加密模块（量子加密、后量子加密）
+│   └── tunnel.py       # 隧道和协议伪装
 ├── modules/             # 后渗透模块
-│   ├── reverse_shell.cpp   # 反向 Shell 控制
-│   ├── file_transfer.cpp   # 文件上传/下载
-│   ├── keylogger.cpp      # 键盘记录
-│   ├── system_info.cpp    # 系统信息收集
-│   └── password_crack.cpp # 密码破解
+│   ├── reverse_shell.py   # 反向 Shell 控制
+│   ├── file_transfer.py   # 文件上传/下载
+│   ├── keylogger.py      # 键盘记录
+│   ├── system_info.py    # 系统信息收集
+│   └── password_crack.py # 密码破解
 ├── web/                 # Web 控制面板
 │   ├── server.py        # Flask 后端
 │   └── client.js        # 前端界面
 ├── payloads/            # Payload 模板与生成
-│   ├── payload_win.cpp  # Windows 特定的 Payload
-│   └── payload_linux.cpp # Linux 特定的 Payload
+│   ├── payload_win.py  # Windows 特定的 Payload
+│   └── payload_linux.py # Linux 特定的 Payload
 └── utils/               # 工具库
-├── logger.cpp       # 日志管理
-└── crypto.cpp       # 加密工具（包括量子加密模块）
+├── logger.py       # 日志管理
+└── crypto.py       # 加密工具（包括量子加密模块）
 ```
