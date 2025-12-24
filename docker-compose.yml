@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  c2_server:
+    build: .
+    container_name: c2_server
+    command: python -m cli.cli server --host 0.0.0.0 --port 5555
+    networks:
+      - c2_network
+    ports:
+      - "5555:5555"
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+  c2_client:
+    build: .
+    container_name: c2_client
+    command: python -m cli.cli client --host c2_server --port 5555 --command "echo Hello from Docker!"
+    networks:
+      - c2_network
+    depends_on:
+      - c2_server
+    restart: unless-stopped
+
+networks:
+  c2_network:
+    driver: bridge

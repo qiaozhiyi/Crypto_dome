@@ -1,0 +1,4 @@
+# Python >= 3.10 (code uses PEP 604 unions: `bytes | str`)
+cryptography
+pqcrypto
+pycryptodome

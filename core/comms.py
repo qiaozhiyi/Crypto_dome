@@ -10,7 +10,9 @@ import ssl
 import struct
 import time
 from dataclasses import dataclass
+from pyexpat.errors import messages
 from typing import Callable, Optional
+import threading
 
 DEFAULT_MAX_BLOB_SIZE = 16 * 1024 * 1024  # 16 MiB
 DEFAULT_BACKLOG = 128
@@ -177,18 +179,18 @@ class SecureComm:
             self._send_blob(conn, aad)
             self._send_blob(conn, data_ciphertext)
 
-    def receive_message(self):
+    def receive_message(self, *, bind_host: str | None = None, bind_port: int | None = None):
         """
         接收单条加密消息并解密（一次性服务器）。
-        高并发/高压场景建议使用 SecureCommServer.serve_forever。
+        bind_host/bind_port 用于指定本地监听地址（不要复用对端 host）。
         """
         with SecureCommServer(
-            self.host,
-            self.port,
-            encryption=self.encryption,
-            config=self.config,
-            tls=self.tls,
-            auth=self.auth,
+                bind_host if bind_host is not None else self.host,
+                bind_port if bind_port is not None else self.port,
+                encryption=self.encryption,
+                config=self.config,
+                tls=self.tls,
+                auth=self.auth,
         ) as server:
             return server.serve_once()
 
@@ -524,9 +526,13 @@ class SecureCommServer:
 
 
 # 示例：如何使用通信模块发送和接收加密消息
-def client():
+def client(message:bytes):
+    """
+       向服务器发送加密消息
+       参数：
+           message (bytes): 要发送的消息
+       """
     comm = SecureComm("127.0.0.1", 5555, is_server=False)
-    message = b"Hello, this is a secure message from client!"
     comm.send_message(message)
 
 
@@ -537,16 +543,14 @@ def server():
 
 
 if __name__ == "__main__":
-    # 在不同的线程中运行客户端和服务器
-    import threading
-
     # 启动服务器线程
     server_thread = threading.Thread(target=server)
     server_thread.start()
 
     # 启动客户端线程
     time.sleep(0.2)
-    client_thread = threading.Thread(target=client)
+    message = b"Hello from the main function! This is a test message."
+    client_thread = threading.Thread(target=client,args=(message,))
     client_thread.start()
 
     # 等待线程完成
