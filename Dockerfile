@@ -14,5 +14,6 @@ RUN chmod -R 777 /app
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 设置容器启动时的默认命令，运行 cli.py
-CMD ["python", "cli/cli.py"]
+CMD ["python", "-m", "cli.cli"]
+
 
