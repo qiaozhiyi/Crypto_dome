@@ -16,7 +16,7 @@ services:
   c2_client:
     build: .
     container_name: c2_client
-    command: python -m cli.cli client --host c2_server --port 5555 --command "echo Hello from Docker!"
+    command: python -m cli.cli client --host c2_server --port 5555 --command "uname -a"
     networks:
       - c2_network
     depends_on:
