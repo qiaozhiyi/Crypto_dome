@@ -50,17 +50,17 @@ C2-Framework/
 1) 构建镜像：
 
 ```bash
-docker build -t crypto_dome:local .
+docker-compose build
 ```
 
-2) 运行通信模块自测（同进程内起 server+client 发一条消息）：
+2) 启动受控端：
 
 ```bash
-docker run --rm crypto_dome:local
+docker-compose up --build c2_server
 ```
 
-3) 运行加密模块自测（ML-KEM + AES-GCM 加解密演示）：
+3) 启动一次性服务端：
 
 ```bash
-docker run --rm crypto_dome:local python core/encrypto.py
+docker-compose run --rm -it c2_client python -m cli.cli client --host c2_server --port 5555 --interactive
 ```
